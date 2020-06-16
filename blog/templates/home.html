@@ -1,0 +1,44 @@
+{% load static %}
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>担路博文</title>
+    <style type="text/css">
+        footer {
+            background-color: #222;
+            color: #fff;
+            font-size: 14px;
+            bottom: 0;
+            position: fixed;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 999;
+        }
+        footer p {
+            margin: 10px 0;
+        }
+        footer a {
+            color: #3c97bf;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+您好，{{ user.username }}！欢迎参观<a href="http://www.demlution.com/" style="text-decoration: none;color: #1e77ba">担路网</a>个人博客。
+    <h2>博文列表</h2>
+    <div style="margin-left: 50px;color: #654219">
+        <ui>
+            <li style="padding-top: 15px;font-size: 20px;"><a href="{% url 'todos' %}" style="text-decoration: none;color: rgba(178,6,217,0.75);">前往todos记事本</a></li>
+            {% for blog in blogs %}
+                <li style="padding-top: 15px;font-size: 20px;"><a href="{% url 'blog' blog.flag %}" style="text-decoration: none;color: #1e77ba;">{{ blog.title }}</a></li>
+            {% endfor %}
+        </ui>
+    </div>
+<footer>
+	<p>
+		<h3><a href="mailto:1554091920@qq.com">联系开发者</a>，获取撰文权限！</h3>
+	</p>
+</footer>
+</body>
+</html>

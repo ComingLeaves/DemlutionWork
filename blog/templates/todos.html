@@ -1,0 +1,200 @@
+{% load static %}
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>TodoMVC</title>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://unpkg.com/todomvc-app-css@2.2.0/index.css"
+    />
+    <style>
+      [v-cloak] {
+        display: none;
+      }
+      .active{
+        text-decoration: line-through;
+        color: #DDDDDD;
+      }
+    </style>
+  </head>
+  <body>
+	<!--  主题区域  -->
+    <section class="todoapp">
+	  <!--  输入框  -->
+      <header class="header">
+        <h1>My todos</h1>
+        <input v-focus v-model="inputValue" @keyup.enter="add" class="new-todo" autofocus="autofocus" autocomplete="off" placeholder="请写下将要做的事" />
+      </header>
+	  <!--  列表区域  -->
+      <section class="main">
+        <input id="toggle-all" class="toggle-all" type="checkbox" v-model="checked"/>
+        <label for="toggle-all"></label>
+        <ul class="todo-list">
+          <li v-for="(item,index) in t_completed" class="todo" :class="{ completed: todo_completed(index) }">
+            <div class="view">
+              <input class="toggle" type="checkbox" @click="complete(index)" :id="checkbox(index)" v-model="checked_status(index)"/>
+                <label v-bind:class="{active:checked}" @dblclick="editTodo(index)">[[ t_title[index] ]]</label>
+              <button class="destroy" @click="remove(index)"></button>
+            </div>
+            <input class="edit" style="" type="text" v-show="true" @blur="doneEdit(todo)" @keyup.enter="doneEdit(todo)" @keyup.esc="cancelEdit(todo)"/>
+          </li>
+        </ul>
+      </section>
+      <!--  统计区域  -->
+	  <footer class="footer">
+        <span class="todo-count">
+          <strong>[[ t_title.length ]]</strong> items left
+        </span>
+        <ul class="filters">
+          <li>
+            <a href="{% url 'todos' %}">All</a>
+          </li>
+          <li>
+            <a href="{% url 'active' %}">Active</a>
+          </li>
+          <li>
+            <a href="{% url 'completed' %}">Completed</a>
+          </li>
+        </ul>
+        <button class="clear-completed" @click="clear_completed()">
+          Clear completed
+        </button>
+      </footer>
+    </section>
+	<!--  底部  -->
+    <footer class="info">
+      <p>Double-click to edit a todo</p>
+      <p>Written by <a href="http://github.com/comingleaves">ComingLeaves</a></p>
+      <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+    </footer>
+	<!--  导入vue.js  -->
+	<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script>
+        Vue.directive('focus', {
+          // 当绑定元素插入到 DOM 中。
+          inserted: function (el) {
+            // 聚焦元素
+            el.focus()
+          }
+        })
+
+        function insert(todo) {
+            axios.get("insert",{
+                params:{
+                    todo:todo,
+                }
+            })
+            .then((res)=>{location.reload();})
+            .catch(function (error) {//请求失败处理
+                console.log(error);
+            });
+        }
+        function del(id) {
+            axios.get("del",{
+                params:{
+                    id:id,
+                }
+            })
+            .then((res)=>{console.log(res.data);})
+            .catch(function (error) {//请求失败处理
+                console.log(error);
+            });
+        }
+        function change(id,status) {
+            axios.get("change",{
+                params:{
+                    id:id,
+                    status:status,
+                }
+            })
+            .then((res)=>{console.log(res.data);})
+            .catch(function (error) {//请求失败处理
+                console.log(error);
+            });
+        }
+        function del_ls(ls) {
+            axios.get("del",{
+                params:{
+                    id:ls,
+                }
+            })
+            .then((res)=>{location.reload();})
+            .catch(function (error) {//请求失败处理
+                console.log(error);
+            });
+        }
+        function fn(i,list) {
+            return del_ls(list[i]);
+        }
+		var app = new Vue({
+			delimiters:['[[',']]'],
+			el:".todoapp",
+			data:{
+				t_title:{{ t_title|safe }},
+                t_id:{{ t_id|safe }},
+                t_completed:{{ t_completed|safe }},
+                inputValue:"",
+				checked:false,
+                todo_status:false,
+                edit_point:2,//可编辑标签
+			},
+			methods:{
+				add(){
+					this.t_title.push(this.inputValue);
+					insert(this.inputValue);
+				},
+				remove(index){
+					this.t_title.splice(index,1);
+					del(this.t_id[index]);
+					this.t_id.splice(index,1);
+					this.t_completed.splice(index,1);
+				},
+				complete(index){
+				    let flag = this.t_completed;
+				    if(flag[index]=='0')
+				        flag.splice(index,1,'1');
+				    else
+				        flag.splice(index,1,'0');
+				    change(this.t_id[index],flag[index]);
+				},
+                todo_completed(index){
+				    if(this.t_completed[index]=='0')
+				        return false
+                    else
+                        return true
+                },
+                checkbox(index){
+				    return "checkbox"+index;
+                },
+                checked_status(index){
+				    if(this.t_completed[index]=='1')
+				        return true;
+                },
+                editTodo(index){
+                    this.edit_point=5;
+                    console.log("132154684");
+                },
+                doneEdit(index){
+                    this.edit_point=2;
+                },
+                cancelEdit(index){
+                    this.edit_point=2;
+                },
+                clear_completed(){
+				    var l=[];
+				    for(var i=0;i<this.t_completed.length;i++){
+				        if(this.t_completed[i]=="1"){
+				            var ls = fn(i,this.t_id);
+                        }
+                    }
+                },
+			},
+
+		})
+	</script>
+  </body>
+</html>
